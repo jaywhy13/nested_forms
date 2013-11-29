@@ -1,0 +1,32 @@
+{% load crispy_forms_tags %}
+<html>
+<head>
+	<title>Hello</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+
+	<style>
+		.main-container {
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+	<h1>Testing Nested Forms</h1>
+	<div class="main-container">
+		<h3>Block List</h3>
+		{% for block in blocks %}
+			<h5>{{ block.name }} - {{ block.buildings.count }} buildings.</h5>
+		{% endfor %}
+		<hr/>
+
+		<h3>Nested Form</h3>
+		
+		<hr/>
+
+	</div>
+	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+</body>
+</html>
+
+
