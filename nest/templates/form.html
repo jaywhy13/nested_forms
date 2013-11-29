@@ -13,6 +13,8 @@
 <body>
 	<h1>Testing Nested Forms</h1>
 	<div class="main-container">
+	{% if message %} {{ message }} {% endif %}
+
 		<h3>Block List</h3>
 		{% for block in blocks %}
 			<h5>{{ block.name }} - {{ block.buildings.count }} buildings.</h5>
@@ -20,7 +22,18 @@
 		<hr/>
 
 		<h3>Nested Form</h3>
-		
+		<form method="post">
+			{{ formset.management_form }}
+			{% crispy form %}	
+
+			{% for form in formset %}
+				{% crispy form helper %}
+			{% endfor %}
+			<div class="form-actions">
+				<a href="#" class="btn btn-info add-book">Add Building</a>
+				<button type="submit" class="btn btn-primary">Create Block</button>
+			</div>
+		</form><!-- we closed this -->
 		<hr/>
 
 	</div>
