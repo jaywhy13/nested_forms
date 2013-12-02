@@ -1,3 +1,4 @@
+{% load nested_crispy %}
 {% load crispy_forms_tags %}
 <html>
 <head>
@@ -19,6 +20,14 @@
 		{% for block in blocks %}
 			<h5>{{ block.name }} - {{ block.buildings.count }} buildings.</h5>
 		{% endfor %}
+		<hr/>
+
+		<h3>Our Nested Form</h3>
+		<form method="post">
+			{% nested_form form %}	
+
+		</form><!-- we closed this -->
+
 		<hr/>
 
 		<h3>Nested Form</h3>
