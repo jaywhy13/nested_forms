@@ -14,8 +14,8 @@ from nest.models import Block, Building, Tenant
 def home(request):
 	blocks = Block.objects.all()
 	# Declare the form and the formset
-	form = BlockForm(request.POST or None)
-	formset = InlineFormset(request.POST or None)
+	form = BlockForm(instance=blocks[0])
+	formset = InlineFormset(instance=blocks[0])
 	helper = FormHelper()
 	helper.form_tag = False
 
