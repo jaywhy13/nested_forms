@@ -1,7 +1,10 @@
 # Django settings for nested_forms project.
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(".")))
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
