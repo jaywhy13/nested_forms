@@ -19,6 +19,10 @@ class NestedModelForm(ModelForm):
 		if child_form:
 			self.setup_nested_form(child_form, child_actions_form)
 
+
+	def get_form_name(self):
+		return self.__class__.__name__
+
 	def setup_nested_form(self, child_form, child_actions_form=None):
 		""" This function declares a property "inline_form" that contains
 			the inline formset (generated using the inlineformset_factory).
@@ -37,10 +41,10 @@ class NestedModelForm(ModelForm):
 			TODO: form_templates command needs some work. Need to figure out 
 			how we will print the form without nesting them.
 		"""
-		parent_model = self._meta.model
-		child_model = child_form._meta.model
-		InlineFormset = inlineformset_factory(parent_model, child_model, 
-			extra=0)
+		self.parent_model = self._meta.model # this form 
+		self.child_model = child_form._meta.model
+		InlineFormset = inlineformset_factory(self.parent_model, 
+			self.child_model, extra=0)
 		self.inline_form = InlineFormset(
 			instance=self.instance,
 			data=self.data if self.is_bound else None,
@@ -88,7 +92,7 @@ class BlockForm(NestedModelForm):
 	class Meta:
 		model = Block
 
-class BuildingForm(ModelForm):
+class BuildingForm(NestedModelForm):
 
 	def __init__(self, *args, **kwargs):
 		super(BuildingForm, self).__init__(*args, **kwargs)
