@@ -16,8 +16,7 @@ class NestedModelForm(ModelForm):
 		child_form = kwargs.pop("child_form", None)
 		child_actions_form = kwargs.pop("child_actions_form", None)
 		super(NestedModelForm, self).__init__(*args, **kwargs)
-		if child_form:
-			self.setup_nested_form(child_form, child_actions_form)
+		self.setup_nested_form(child_form, child_actions_form)
 
 
 	def get_form_name(self):
@@ -42,18 +41,24 @@ class NestedModelForm(ModelForm):
 			how we will print the form without nesting them.
 		"""
 		self.parent_model = self._meta.model # this form 
-		self.child_model = child_form._meta.model
-		InlineFormset = inlineformset_factory(self.parent_model, 
-			self.child_model, extra=0)
-		self.inline_form = InlineFormset(
-			instance=self.instance,
-			data=self.data if self.is_bound else None,
-			prefix="%s-%s" % (
-				self.prefix,
-				InlineFormset.get_default_prefix()
+		self.child_model = child_form._meta.model if child_form else None
+		self.child_form = child_form
+		self.child_actions_form = child_actions_form
+		if child_form:
+			InlineFormset = inlineformset_factory(self.parent_model, 
+				self.child_model, extra=0)
+			self.inline_form = InlineFormset(
+				instance=self.instance,
+				data=self.data if self.is_bound else None,
+				prefix="%s-%s" % (
+					self.prefix,
+					InlineFormset.get_default_prefix()
+					)
 				)
-			)
-		self.inline_actions_form = child_actions_form
+			self.inline_actions_form = child_actions_form
+		else:
+			self.inline_form = None
+			self.inline_actions_form = None
 
 	@staticmethod
 	def get_add_child_js(form):
