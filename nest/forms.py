@@ -1,3 +1,5 @@
+import inspect
+
 from django.forms import ModelForm, Form
 from django.forms.models import (
 	modelformset_factory,
@@ -37,8 +39,6 @@ class NestedModelForm(ModelForm):
 			their name, need to fix that.
 			TODO: Sort out how child_actions_form will call JS function
 			TODO: Think about nesting a form within a InlineFormset
-			TODO: form_templates command needs some work. Need to figure out 
-			how we will print the form without nesting them.
 		"""
 		self.parent_model = self._meta.model # this form 
 		self.child_model = child_form._meta.model if child_form else None
@@ -65,7 +65,9 @@ class NestedModelForm(ModelForm):
 		""" Returns the JS call necessary to add a child to this form of type:
 			form
 		"""
-		return "addChildForm()"
+		if inspect.isclass(form):
+			form = form()
+		return "addChildForm(this, '%s')" % form.get_form_name()
 
 	@staticmethod
 	def get_delete_child_js():
@@ -73,22 +75,22 @@ class NestedModelForm(ModelForm):
 		"""
 		return "deleteChild(this)"
 
-class BlockActionsForm(Form):
+class BuildingActionsForm(Form):
 
 	def __init__(self, *args, **kwargs):
-		super(BlockActionsForm, self).__init__(*args, **kwargs)
+		super(BuildingActionsForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
 		# Make sure that the form tag is set to False
 		self.helper.form_tag = False
 		# Add a button to add a building
 		self.helper.add_input(Button("add_building", "Add Building",
-			onclick="%s" % NestedModelForm.get_add_child_js(BlockForm)))
+			onclick="%s" % NestedModelForm.get_add_child_js(BuildingForm)))
 
 class BlockForm(NestedModelForm):
 	def __init__(self, *args, **kwargs):
 		# Set the child form
 		kwargs["child_form"] = BuildingForm
-		kwargs["child_actions_form"] = BlockActionsForm
+		kwargs["child_actions_form"] = BuildingActionsForm
 		super(BlockForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
 		self.helper.form_method = 'post'
@@ -107,6 +109,7 @@ class BuildingForm(NestedModelForm):
 
 	class Meta:
 		model = Building		
+		exclude = ["block"]
 
 class TenantForm(ModelForm):
 	class Meta:
