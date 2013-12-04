@@ -34,16 +34,16 @@ class CompositeNode(Node):
         context["inline_form_management"] = actual_form.inline_form.management_form
         nodelist.append(CrispyFormNode(form="inline_form", helper=self.helper))
         # Check if there is an inline form
-        if hasattr(actual_form, "inline_actions_form"):
+        if hasattr(actual_form, "inline_actions_form") and \
+                actual_form.inline_actions_form is not None:
             context["inline_actions_form"] = actual_form.inline_actions_form
-            nodelist.append(CrispyFormNode(form="inline_actions_form", helper=None))
+            nodelist.append(CrispyFormNode(form="inline_actions_form", helper=self.helper))
         return nodelist.render(context)
 
 @register.tag
 def nested_form(parser, token):
     tokens = token.split_contents()
     form = tokens.pop(1) # pop the 2nd item, skip the tag name
-    print "We recceived form: %s with type %s" % (form, type(form))
     try:
         helper = tokens.pop(1)
     except IndexError:
