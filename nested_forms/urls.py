@@ -7,6 +7,8 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'nest.views.home', name='home'),
+	url(r'^edit/(?P<pk>\d+)$', 'nest.views.edit_block', name='edit-block'),
+	url(r'^delete/(?P<pk>\d+)$', 'nest.views.delete_block', name='delete-block'),
     # url(r'^nested_forms/', include('nested_forms.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
