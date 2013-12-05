@@ -38,6 +38,23 @@ class NestedModelForm(ModelForm):
 		"""
 		return to_underscore_case(self.get_form_name())
 
+	def is_valid(self):
+		valid = super(NestedModelForm, self).is_valid()
+		# Check if the inline form is valid
+		if self.inline_form:
+			print("Checking if our inline form is valid")
+			return valid and self.inline_form.is_valid()
+		return valid
+
+	def save(self, commit=True):
+		print("Saving main form")
+		result = super(NestedModelForm, self).save(commit=commit)
+
+		if self.inline_form:
+			print("Saving inline form")
+			self.inline_form.save(commit=commit)
+		return result
+
 	def setup_nested_form(self, child_form, child_actions_form=None):
 		""" This function declares a property "inline_form" that contains
 			the inline formset (generated using the inlineformset_factory).
