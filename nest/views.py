@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.template import RequestContext
 
@@ -14,20 +14,22 @@ from nest.models import Block, Building, Tenant
 def home(request):
 	blocks = Block.objects.all()
 	# Declare the form and the formset
-	form = BlockForm(instance=blocks[0])
-	formset = InlineFormset(instance=blocks[0])
-	helper = FormHelper()
-	helper.form_tag = False
+	form = BlockForm(request.POST or None)
 
 	if form.is_valid():
-		if formset.is_valid():
-			print("The format is VALID")
-			obj = form.save()
-			formset.instance = obj
-			formset.save()
-		else:
-			message = "The formset is invalid"
+		obj = form.save()
+
 	return render_to_response("form.html", locals(), 
 		context_instance=RequestContext(request))
 
+def edit_block(request, pk):
+	blocks = Block.objects.all()
+	block = get_object_or_404(Block, pk=pk)
+	form = BlockForm(instance=block)	
+	return render_to_response("form.html", locals(), 
+		context_instance=RequestContext(request))
 
+def delete_block(request, pk):
+	block = get_object_or_404(Block, pk=pk)
+	block.delete()
+	return redirect("/")
