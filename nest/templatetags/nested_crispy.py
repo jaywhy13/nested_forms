@@ -24,6 +24,11 @@ class CompositeNode(Node):
         if actual_helper.form_tag:
             raise template.TemplateSyntaxError("form_tag cannot be True on the helper, please go and rectify that")
 
+        management_form_helper = FormHelper()
+        management_form_helper.form_tag = False
+        management_form_helper.disable_csrf = True
+
+
         # Add the forms to the nodelist
         nodelist = NodeList()
         # Add the main form to our node list
@@ -32,7 +37,10 @@ class CompositeNode(Node):
         # Stuff some other stuff in the context for resolving later
         context["inline_form"] = actual_form.inline_form
         context["inline_form_management"] = actual_form.inline_form.management_form
-        nodelist.append(CrispyFormNode(form="inline_form", helper=self.helper))
+        context["management_form_helper"] = management_form_helper
+        # Seems we don't need the inline form bcuz the management form prints it out...
+        #nodelist.append(CrispyFormNode(form="inline_form", helper=self.helper))
+        nodelist.append(CrispyFormNode(form="inline_form_management", helper="management_form_helper"))
         # Check if there is an inline form
         if hasattr(actual_form, "inline_actions_form") and \
                 actual_form.inline_actions_form is not None:
