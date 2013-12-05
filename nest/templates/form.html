@@ -18,12 +18,17 @@
 
 		<h3>Block List</h3>
 		{% for block in blocks %}
-			<h5>{{ block.name }} - {{ block.buildings.count }} buildings.</h5>
+			<h5>
+				{{ block.name }} - {{ block.buildings.count }} buildings.
+				<a href="{% url 'edit-block' block.pk %}">Edit</a>
+				&nbsp;&nbsp;
+				<a href="{% url 'delete-block' block.pk %}">Delete</a>
+			</h5>
 		{% endfor %}
 		<hr/>
 
 		<h3>Our Nested Form</h3>
-		<form method="post">
+		<form method="post" action="/">
 			{% nested_form form %}	
 		<b>Closed</b>
 		</form><!-- we closed this -->
