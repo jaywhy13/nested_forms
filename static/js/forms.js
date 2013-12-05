@@ -1,13 +1,21 @@
 
-function addChildForm(inputDom, form, target){
+function addChildForm(inputDom, form, formPrefix){
     console.log("Adding form of type: ", form);
-    dust.render(form, {}, function(err, out){
+    // Figure out what index this needs to be...
+    // Use the count as the current Id then increment it...
+    var sel = "#id_" + formPrefix + "-TOTAL_FORMS";
+    console.log("Selector: ", sel);
+    var count = parseInt($(sel).val());
+    $(sel).val(count + 1);
+
+    console.log("The index is now: " + count);
+
+    dust.render(form, {"index" : count}, function(err, out){
         if(err){
             console.log(err);
         }
-        target = target || $(inputDom).parent();
+        var target = $(inputDom).parent();
         target.append($(out));
-        // TODO: Update the management form
-        
+
     }); 
 }
