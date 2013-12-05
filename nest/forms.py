@@ -1,4 +1,5 @@
 import inspect
+import re
 
 from django.forms import ModelForm, Form
 from django.forms.models import (
@@ -12,17 +13,30 @@ from crispy_forms.layout import Submit, Button
 
 from nest.models import Building, Block, Tenant
 
+def to_underscore_case(name):
+	""" Converts title case to underscore case
+	"""
+	s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+	return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
 class NestedModelForm(ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		child_form = kwargs.pop("child_form", None)
 		child_actions_form = kwargs.pop("child_actions_form", None)
 		super(NestedModelForm, self).__init__(*args, **kwargs)
+		if not self.prefix:
+			self.prefix = ""
 		self.setup_nested_form(child_form, child_actions_form)
-
 
 	def get_form_name(self):
 		return self.__class__.__name__
+
+	def get_uc_form_name(self):
+		""" Returns the underscore cased version
+		"""
+		return to_underscore_case(self.get_form_name())
 
 	def setup_nested_form(self, child_form, child_actions_form=None):
 		""" This function declares a property "inline_form" that contains
@@ -35,39 +49,45 @@ class NestedModelForm(ModelForm):
 			Finally, key thing to note here is that this method also
 			ensures that data is passed to the child form so that it 
 			renders the appropriate data is the form is already bound.
-			TODO: This form has NO prefix, so the children has a 'None' in
-			their name, need to fix that.
-			TODO: Sort out how child_actions_form will call JS function
 			TODO: Think about nesting a form within a InlineFormset
+			TODO: Removal of forms... the delete button not showing up
+			TODO: SUbmission of data, the submit buttons are going to appear some
+			where else basically. 
+			TODO: Add the radio button logic
 		"""
 		self.parent_model = self._meta.model # this form 
 		self.child_model = child_form._meta.model if child_form else None
 		self.child_form = child_form
 		self.child_actions_form = child_actions_form
+		self.inline_prefix = None
 		if child_form:
 			InlineFormset = inlineformset_factory(self.parent_model, 
 				self.child_model, extra=0)
 			self.inline_form = InlineFormset(
 				instance=self.instance,
 				data=self.data if self.is_bound else None,
-				prefix="%s-%s" % (
+				prefix="%s%s" % (
 					self.prefix,
 					InlineFormset.get_default_prefix()
 					)
 				)
 			self.inline_actions_form = child_actions_form
+			self.inline_prefix = InlineFormset.get_default_prefix()
 		else:
 			self.inline_form = None
 			self.inline_actions_form = None
 
 	@staticmethod
-	def get_add_child_js(form):
-		""" Returns the JS call necessary to add a child to this form of type:
-			form
+	def get_add_child_js(child_form, parent_form):
+		""" Returns the JS call necessary to add a child to this form of type
+			"child_form" to a given form. Also need to specify the parent_form.
 		"""
-		if inspect.isclass(form):
-			form = form()
-		return "addChildForm(this, '%s')" % form.get_form_name()
+		if inspect.isclass(child_form):
+			child_form = child_form()
+		if inspect.isclass(parent_form):
+			parent_form = parent_form()
+		return "addChildForm(this, '%s', '%s')" % (child_form.get_form_name(),
+			parent_form.inline_prefix)
 
 	@staticmethod
 	def get_delete_child_js():
@@ -84,7 +104,8 @@ class BuildingActionsForm(Form):
 		self.helper.form_tag = False
 		# Add a button to add a building
 		self.helper.add_input(Button("add_building", "Add Building",
-			onclick="%s" % NestedModelForm.get_add_child_js(BuildingForm)))
+			onclick="%s" % NestedModelForm.get_add_child_js(BuildingForm,
+				BlockForm)))
 
 class BlockForm(NestedModelForm):
 	def __init__(self, *args, **kwargs):
@@ -95,6 +116,7 @@ class BlockForm(NestedModelForm):
 		self.helper = FormHelper()
 		self.helper.form_method = 'post'
 		self.helper.form_tag = False
+		self.helper.add_input(Submit("submit", "Create Building"))
 
 	class Meta:
 		model = Block
