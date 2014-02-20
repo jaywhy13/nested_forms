@@ -67,7 +67,7 @@ class NestedFormNodeJs(Node):
         nodelist.append(HtmlContent("""
             <script> 
                 $(document).ready(function(){
-                    ko.applyBindings(new ManagementForm('%s', '%s'), $(".%s").get()[0]);
+                    ko.applyBindings(new ManagementForm('%s', '%s'), jQuery(".%s").get()[0]);
                 });
             </script>
             """ % (form_name, child_template_name, form_div_class)))
@@ -108,8 +108,8 @@ class NestedFormNode(Node):
             - <div class='FormName_form_div'> - HtmlContent
                 - The actual form (parent)
                 -  The management form (hidden)
-                - Inline actions form (if one exists)
                 - <div class='FormName_children_div'></div>
+                - Inline actions form (if one exists)
                 - Knockout form templates
             - </div>
             Then we return nodelist.render

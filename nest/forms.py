@@ -103,7 +103,7 @@ class NestedModelForm(ModelForm):
 			child_form = child_form()
 		if inspect.isclass(parent_form):
 			parent_form = parent_form()
-		return "click: addChildForm()"
+		return "click: addChildForm"
 		# % (child_form.get_form_name(), parent_form.inline_prefix)
 
 	@staticmethod
@@ -154,9 +154,9 @@ class TenantForm(ModelForm):
 	class Meta:
 		model = Tenant
 
-BuildingFormSet = modelformset_factory(Building, form=BuildingForm, extra=3)
+BuildingFormSet = modelformset_factory(Building, form=BuildingForm, extra=0)
 TenantFormSet = modelformset_factory(Tenant, form=TenantForm)
-InlineFormset = inlineformset_factory(Block, Building, extra=1)
+InlineFormset = inlineformset_factory(Block, Building, extra=0)
 
 class BaseNestedFormset(BaseInlineFormSet):
 	
