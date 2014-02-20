@@ -65,6 +65,8 @@ class NestedFormNodeJs(Node):
         child_template_name = "%s-template" % actual_form.child_form.__name__
         form_name = actual_form.get_form_name()
 
+        num_forms = len(actual_form.inline_form.forms)
+
         nodelist = NodeList()
         form_div_class = "%s_form_div" % form_name
 
@@ -72,10 +74,10 @@ class NestedFormNodeJs(Node):
         nodelist.append(HtmlContent("""
             <script> 
                 $(document).ready(function(){
-                    ko.applyBindings(new ManagementForm('%s', '%s'), jQuery(".%s").get()[0]);
+                    ko.applyBindings(new ManagementForm('%s', '%s', %s), jQuery(".%s").get()[0]);
                 });
             </script>
-            """ % (form_name, child_template_name, form_div_class)))
+            """ % (form_name, child_template_name, num_forms, form_div_class)))
         nodelist.append(HtmlContent("</div>"))
 
         return nodelist.render(context)
@@ -108,8 +110,7 @@ class NestedFormNode(Node):
         management_form_helper.form_tag = False
         management_form_helper.disable_csrf = True
         management_form = actual_form.inline_form.management_form
-        # TERRIBLE HACK - replace the property with the actual variable
-        actual_form.inline_form.management_form = management_form
+
 
         """ Basically we create a node list and all the following things to it:
             - <div class='FormName_form_div'> - HtmlContent
@@ -146,9 +147,6 @@ class NestedFormNode(Node):
         fields["TOTAL_FORMS"].widget.attrs["data-bind"] = "value: totalForms"
         fields["INITIAL_FORMS"].widget.attrs["data-bind"] = "value: initialForms"
         fields["MAX_NUM_FORMS"].widget.attrs["data-bind"] = "value: maxForms"
-
-        # nodelist.append(CrispyFormNode(form="inline_form_management", 
-        #     helper="management_form_helper"))
 
         # Check if there is an inline form
         if hasattr(actual_form, "inline_actions_form") and \

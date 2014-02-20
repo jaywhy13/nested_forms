@@ -19,6 +19,14 @@ def to_underscore_case(name):
 	s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
 	return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
+class ManangeFormCachedBaseInlineFormset(BaseInlineFormSet):
+
+	@property
+	def management_form(self):
+		if not hasattr(self, "_management_form"):
+			self._management_form = super(ManangeFormCachedBaseInlineFormset, self).management_form
+		return self._management_form
+
 
 class NestedModelForm(ModelForm):
 
@@ -79,7 +87,8 @@ class NestedModelForm(ModelForm):
 		self.inline_prefix = None
 		if child_form:
 			InlineFormset = inlineformset_factory(self.parent_model, 
-				self.child_model, extra=0)
+				self.child_model, extra=0,
+				formset=ManangeFormCachedBaseInlineFormset)
 			self.inline_form = InlineFormset(
 				instance=self.instance,
 				data=self.data if self.is_bound else None,
