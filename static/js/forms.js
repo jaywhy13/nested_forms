@@ -15,7 +15,7 @@ function ManagementForm(parentFormName, childTemplateForm){
         // Adds a child form to this form
         console.log("Adding a child");
         var div = jQuery("<div/>");
-        div.attr("data-bind", "template: {name: '" + self.childTemplateForm + "'}");
+        div.attr("data-bind", "template: {name: '" + self.childTemplateForm + "', data: {index: " + self.totalForms() + "}}");
         div.appendTo(jQuery("." + self.childrenDivFormName));
         self.totalForms( self.totalForms() + 1 );
         ko.applyBindings(this, div.get()[0]);

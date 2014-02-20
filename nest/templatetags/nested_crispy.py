@@ -39,7 +39,12 @@ class KnockoutFormTemplate(Node):
 
         # Loop through each and get the knockout templates for each
         for child_form, parent_form in child_forms:
-            form_name = child_form.__name__
+            child_form = child_form() if isinstance(child_form, type) else child_form
+            # Add knockoutjs bindings to the child form fields
+            prefix = parent_form.inline_form.prefix
+            for field_name, field in child_form.fields.iteritems():
+                field.widget.attrs["data-bind"] = mark_safe("attr: { id: 'id_%s' + '-' + index + '-%s', name: '%s-' + index + '-%s'}" % (prefix, field_name, prefix, field_name))
+            form_name = child_form.__class__.__name__
             template_name = "%s-template" % form_name
             context["child_%s" % form_name] = child_form
             nodelist.append(HtmlContent('<script type="text/html" id="%s">' % template_name))
