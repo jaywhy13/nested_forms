@@ -103,8 +103,8 @@ class NestedModelForm(ModelForm):
 			child_form = child_form()
 		if inspect.isclass(parent_form):
 			parent_form = parent_form()
-		return "addChildForm(this, '%s', '%s')" % (child_form.get_form_name(),
-			parent_form.inline_prefix)
+		return "click: addChildForm()"
+		# % (child_form.get_form_name(), parent_form.inline_prefix)
 
 	@staticmethod
 	def get_delete_child_js():
@@ -121,7 +121,7 @@ class BuildingActionsForm(Form):
 		self.helper.form_tag = False
 		# Add a button to add a building
 		self.helper.add_input(Button("add_building", "Add Building",
-			onclick="%s" % NestedModelForm.get_add_child_js(BuildingForm,
+			data_bind="%s" % NestedModelForm.get_add_child_js(BuildingForm,
 				BlockForm)))
 
 class BlockForm(NestedModelForm):
