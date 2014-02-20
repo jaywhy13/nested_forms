@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 <html>
 <head>
-	<title>Hello</title>
+	<title>Nested Forms with KnockoutJS</title>
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 
 	<style>
@@ -27,34 +27,23 @@
 		{% endfor %}
 		<hr/>
 
-		<h3>Our Nested Form</h3>
+
+		<h3>Nested Form Example</h3>
 		<form method="post" action="/">
-			{% nested_form form %}	
+			{% nested_form form %}
+
 		<b>Closed</b>
 		</form><!-- we closed this -->
 		<!-- END OF OUR NESTED FORMS -->
-		<hr/>
-
-		<h3>Nested Form</h3>
-		<form method="post">
-			{{ formset.management_form }}
-			{% crispy form %}	
-
-			{% for form in formset %}
-				{% crispy form helper %}
-			{% endfor %}
-			<div class="form-actions">
-				<a href="#" class="btn btn-info add-book">Add Building</a>
-				<button type="submit" class="btn btn-primary">Create Block</button>
-			</div>
-		</form>
-		<hr/>
 
 	</div>
 	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 	<script src="/static/js/forms.js"></script>
 	<script src="/static/js/dust-core-2.2.2.min.js"></script>
 	<script src="/static/js/templates.js"></script>
+	<script src="/static/js/knockout-3.0.0.js"></script>
+	{% nested_form_js form %}
+
 </body>
 </html>
 
