@@ -7,7 +7,7 @@ This project is a complete example of how to get nested forms working in Django.
 
 # Requirements
 - Python 2.7
-- Node and NPM
+
 
 # Installation
 The following commands can be used to install the app if you want to try it out.
@@ -17,12 +17,6 @@ virtualenv nested_forms # create a virtual env
 cd nested_forms
 source bin/activate # source the virtual env
 pip install -r requirements.txt
-
-# Install DustJS via Node
-cd node
-npm install watch
-npm install dustjs-linkedin
-cd ..
 
 ./manage.py syncdb
 
