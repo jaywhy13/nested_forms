@@ -108,6 +108,8 @@ class NestedFormNode(Node):
         management_form_helper.form_tag = False
         management_form_helper.disable_csrf = True
         management_form = actual_form.inline_form.management_form
+        # TERRIBLE HACK - replace the property with the actual variable
+        actual_form.inline_form.management_form = management_form
 
         """ Basically we create a node list and all the following things to it:
             - <div class='FormName_form_div'> - HtmlContent
@@ -131,10 +133,13 @@ class NestedFormNode(Node):
 
         # Stuff some other stuff in the context for resolving later
         context["inline_form"] = actual_form.inline_form
-        context["inline_form_management"] = management_form
+        #context["inline_form_management"] = management_form
         context["management_form_helper"] = management_form_helper
-        # Seems we don't need the inline form bcuz the management form prints it out...
-        #nodelist.append(CrispyFormNode(form="inline_form", helper=self.helper))
+
+        # The inline form HAS the management form... 
+        # The inline form prints out the child rows 
+        # It ALSO prints out the management form
+        nodelist.append(CrispyFormNode(form="inline_form", helper=self.helper))
 
         # Place a data binding on the management form for KnockoutJS
         fields = management_form.fields
@@ -142,8 +147,8 @@ class NestedFormNode(Node):
         fields["INITIAL_FORMS"].widget.attrs["data-bind"] = "value: initialForms"
         fields["MAX_NUM_FORMS"].widget.attrs["data-bind"] = "value: maxForms"
 
-        nodelist.append(CrispyFormNode(form="inline_form_management", 
-            helper="management_form_helper"))
+        # nodelist.append(CrispyFormNode(form="inline_form_management", 
+        #     helper="management_form_helper"))
 
         # Check if there is an inline form
         if hasattr(actual_form, "inline_actions_form") and \
