@@ -14,7 +14,7 @@ from nest.models import Block, Building, Tenant
 def home(request):
 	blocks = Block.objects.all()
 	# Declare the form and the formset
-	form = BlockForm(request.POST or None)
+	form = BlockForm(request.POST or None, instance=Block.objects.all()[0])
 
 	if form.is_valid():
 		obj = form.save()
