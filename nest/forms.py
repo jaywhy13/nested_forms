@@ -38,19 +38,17 @@ class NestedModelForm(ModelForm):
 			self.prefix = ""
 		self.setup_nested_form(child_form, child_actions_form)
 
-	def get_form_name(self):
-		return self.__class__.__name__
-
 	def get_uc_form_name(self):
 		""" Returns the underscore cased version
 		"""
 		return to_underscore_case(self.get_form_name())
 
 	def is_valid(self):
+		print("Checking if %s is valid" % self.__class__.__name__)
 		valid = super(NestedModelForm, self).is_valid()
 		# Check if the inline form is valid
 		if self.inline_form:
-			print("Checking if our inline form is valid")
+			print("Checking if inline form %s is valid" % self.inline_form.__class__.__name__)
 			return valid and self.inline_form.is_valid()
 		return valid
 
@@ -88,12 +86,15 @@ class NestedModelForm(ModelForm):
 		if child_form:
 			InlineFormset = inlineformset_factory(self.parent_model, 
 				self.child_model, extra=0,
-				formset=ManangeFormCachedBaseInlineFormset)
+				formset=ManangeFormCachedBaseInlineFormset,
+				form=child_form)
+			prefix_separator = "-" if self.prefix else ""
 			self.inline_form = InlineFormset(
 				instance=self.instance,
 				data=self.data if self.is_bound else None,
-				prefix="%s%s" % (
+				prefix = "%s%s%s" % (
 					self.prefix,
+					prefix_separator,
 					InlineFormset.get_default_prefix()
 					)
 				)
@@ -142,7 +143,7 @@ class BlockForm(NestedModelForm):
 		self.helper = FormHelper()
 		self.helper.form_method = 'post'
 		self.helper.form_tag = False
-		self.helper.add_input(Submit("submit", "Create Building"))
+		self.helper.add_input(Submit("submit", "Create Block"))
 
 	class Meta:
 		model = Block
@@ -150,6 +151,8 @@ class BlockForm(NestedModelForm):
 class BuildingForm(NestedModelForm):
 
 	def __init__(self, *args, **kwargs):
+		kwargs["child_form"] = TenantForm
+		kwargs["child_actions_form"] = TenantActionsForm
 		super(BuildingForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
 		self.helper.form_tag = False
@@ -158,6 +161,19 @@ class BuildingForm(NestedModelForm):
 	class Meta:
 		model = Building		
 		exclude = ["block"]
+
+class TenantActionsForm(Form):
+
+	def __init__(self, *args, **kwargs):
+		super(TenantActionsForm, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		# Make sure that the form tag is set to False
+		self.helper.form_tag = False
+		# Add a button to add a building
+		self.helper.add_input(Button("add_tenant", "Add Tenant",
+			data_bind="%s" % NestedModelForm.get_add_child_js(TenantForm,
+				BuildingForm)))
+
 
 class TenantForm(ModelForm):
 	class Meta:
