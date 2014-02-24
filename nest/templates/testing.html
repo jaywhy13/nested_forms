@@ -1,0 +1,56 @@
+{% load nested_crispy %}
+{% load crispy_forms_tags %}
+<html>
+<head>
+	<title>Testing Nested Bindings in KnockoutJS</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+
+	<style>
+		.main-container {
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+	<h1>Testing Nested Forms</h1>
+	<div class="main-container">
+
+	</div>
+	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+	<script src="/static/js/knockout-3.0.0.js"></script>
+	<script>
+	function Alerter(message){
+		this.message = message;
+		this.doAlert = function(){
+			console.log(this.message);
+		};
+	}
+	</script>
+
+	<script type="text/html" id="alert-template">
+		<button data-bind="click: doAlert">Click</button>
+		<div class="nested-stuff">
+		</div>
+	</script>
+
+	<script>
+	$(document).ready(function(){
+		// Add the first DIV inside main-conatiner
+		var div = $("<div/>");
+		div.attr("data-bind", "template: { name: 'alert-template'} ");
+		$(".main-container").append(div);
+		ko.applyBindings(new Alerter("The parent"), div.get()[0]);
+
+		// Now add a child inside of where the binding was applied...
+		var childDiv = $("<div/>");
+		childDiv.attr("data-bind", "template: { name: 'alert-template'} ");
+		$(".main-container .nested-stuff").append(childDiv);
+
+		ko.applyBindings(new Alerter("The child"), childDiv.get()[0]);
+	});
+	</script>
+
+</body>
+</html>
+
+

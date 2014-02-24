@@ -33,3 +33,7 @@ def delete_block(request, pk):
 	block = get_object_or_404(Block, pk=pk)
 	block.delete()
 	return redirect("/")
+
+def testing(request):
+	return render_to_response("testing.html")
+	
