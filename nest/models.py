@@ -22,5 +22,9 @@ class Tenant(models.Model):
 	building = models.ForeignKey("Building", blank=True, null=True, 
 		related_name="tenants")
 
+	@property
+	def name(self):
+		return "%s, %s" % (self.last_name, self.first_name)
+
 	def __unicode__(self):
 		return "Tenant: %s" % self.name
