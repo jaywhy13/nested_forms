@@ -98,7 +98,7 @@ class NestedModelForm(ModelForm):
 					InlineFormset.get_default_prefix()
 					)
 				)
-			self.inline_actions_form = child_actions_form
+			self.inline_form.actions_form = child_actions_form
 			self.inline_prefix = InlineFormset.get_default_prefix()
 		else:
 			self.inline_form = None
