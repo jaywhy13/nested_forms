@@ -19,13 +19,6 @@ def to_underscore_case(name):
 	s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
 	return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
-class ManangeFormCachedBaseInlineFormset(BaseInlineFormSet):
-
-	@property
-	def management_form(self):
-		if not hasattr(self, "_management_form"):
-			self._management_form = super(ManangeFormCachedBaseInlineFormset, self).management_form
-		return self._management_form
 
 
 class NestedModelForm(ModelForm):
@@ -53,11 +46,11 @@ class NestedModelForm(ModelForm):
 		return valid
 
 	def save(self, commit=True):
-		print("Saving main form")
+		print("Saving main form: %s" % self.__class__.__name__)
 		result = super(NestedModelForm, self).save(commit=commit)
 
 		if self.inline_form:
-			print("Saving inline form")
+			print("Saving inline form: %s" % self.inline_form.__class__.__name__)
 			self.inline_form.save(commit=commit)
 		return result
 
@@ -188,32 +181,22 @@ class BaseNestedFormset(BaseInlineFormSet):
 	def add_fields(self, form, index):
 		super(BaseNestedFormset, self).add_fields(form, index)
 
-		form.nested = self.nested_formset_class(
-			instance=form.instance,
-			data=form.data if form.is_bound else None,
-			prefix="%s-%s" % (
-				form.prefix,
-				self.nested_formset_class.get_default_prefix()
-				)
-			)
-
 	def is_valid(self):
 		""" Check if the other nested forms are valid as well
 		"""
 		result = super(BaseNestedFormset, self).is_valid()
-		print("Start result = %s" % result)
 		for form in self.forms:
-			result = result and form.nested.is_valid()
+			result = result and form.inline_form.is_valid() if hasattr(form, "inline_form") else result
 			print("Is %s valid? %s" % (form.__class__, result))
 
 		return result
 
 	def save(self, commit=True):
-		print("Saving main form")
 		result = super(BaseNestedFormset, self).save(commit=commit)
 
 		for form in self.forms:
-			form.nested.save(commit=commit)
+			if hasattr(form, "inline_form"):
+				form.inline_form.save(commit=commit)
 		return result
 
 def nested_formset_factory(parent_model, child_model, grandchild_model=None):
@@ -229,6 +212,20 @@ def nested_formset_factory(parent_model, child_model, grandchild_model=None):
 	parent_child.nested_formset_class = inlineformset_factory(
 		child_model,
 		grandchild_model,
+		formset=BaseNestedFormset,
 		extra=1
 		)
 	return parent_child
+
+class ManangeFormCachedBaseInlineFormset(BaseNestedFormset):
+
+	@property
+	def management_form(self):
+		if not hasattr(self, "_management_form"):
+			self._management_form = super(ManangeFormCachedBaseInlineFormset, self).management_form
+		return self._management_form
+
+	def save(self, commit=True):
+		super(ManangeFormCachedBaseInlineFormset, self).save(commit=commit)
+		print(" Saving formset: %s" % self.__class__.__name__)
+
