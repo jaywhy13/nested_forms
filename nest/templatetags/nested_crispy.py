@@ -69,9 +69,6 @@ class KnockoutFormTemplate(Node):
             child_forms.append((form.child_form, form))
             form = form.child_form()
 
-        if not child_forms:
-            print("%s has no inline forms" % type(form))
-
         # Loop through each and get the knockout templates for each
         for child_form, parent_form in child_forms:
             child_form = child_form() if isinstance(child_form, type) else child_form
@@ -184,7 +181,7 @@ class NestedFormNode(Node):
         actual_form = self.form_var.resolve(context)
         is_formset = issubclass(actual_form.__class__, BaseFormSet)
         form_name = get_form_name(actual_form) if not is_formset else get_form_name(actual_form.parent_form)
-        print("== Rendering %s (Formset: %s) " % (form_name, is_formset))
+        #print("== Rendering %s (Formset: %s) " % (form_name, is_formset))
         if self.helper is not None:
             actual_helper = self.helper_var.resolve(context)
         else:
@@ -217,7 +214,7 @@ class NestedFormNode(Node):
         # === PRINT THE PARENT FORM
         if not is_formset:
             form_div_class = "%s_form_div" % form_name
-            print("Creating form div class: %s" %form_div_class)
+            #print("Creating form div class: %s" %form_div_class)
             nodelist.append(HtmlContent("<div class='%s'>" % form_div_class))
             nodelist.append(CrispyFormNode(form=self.form, helper=self.helper))
 
@@ -230,15 +227,15 @@ class NestedFormNode(Node):
             for child_index in range(len(actual_form.forms)):
                 child_form = actual_form.forms[child_index]
                 child_form_name = "%s_%s" % (get_form_name(child_form), child_index)
-                print(" Adding %s to the nodelist" % child_form_name)
+                #print(" Adding %s to the nodelist" % child_form_name)
                 child_form_helper_name = "%s_helper" % child_form_name
                 context[child_form_name] = child_form
                 context[child_form_helper_name] = child_form.helper if hasattr(child_form, "helper") else None
                 if hasattr(child_form, "inline_form"):
-                    print(" %s is a NestedModelForm, wrapping it in a nested node" % child_form_name)
+                    #print(" %s is a NestedModelForm, wrapping it in a nested node" % child_form_name)
                     nodelist.append(NestedFormNode(child_form_name, child_form_helper_name, top_level=False))
                 else:
-                    print(" %s (%s) is NOT a NestedModelForm, wrapping it in a crispy node" % (child_form_name, child_form.__class__))
+                    #print(" %s (%s) is NOT a NestedModelForm, wrapping it in a crispy node" % (child_form_name, child_form.__class__))
                     nodelist.append(CrispyFormNode(child_form_name, 
                         child_form_helper_name if hasattr(child_form, "helper") else None))
             nodelist.append(HtmlContent("</div>"))
@@ -258,7 +255,7 @@ class NestedFormNode(Node):
             fields["MAX_NUM_FORMS"].widget.attrs["data-bind"] = "value: maxForms"
 
             # Let Crispy handle the printing of this...
-            print("Adding %s management_form to the node list" % form_name)
+            #print("Adding %s management_form to the node list" % form_name)
             # Add a div for the management form
             management_form_div_class = get_management_form_div_name(actual_form.parent_form)
             nodelist.append(HtmlContent("<div class='%s'>" % management_form_div_class))
