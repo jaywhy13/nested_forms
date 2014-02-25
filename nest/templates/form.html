@@ -9,6 +9,18 @@
 		.main-container {
 			padding: 10px;
 		}
+
+		.form-container {
+			border-left: 2px solid #ccc;
+			padding:5px;
+			padding-left:10px;
+			background-color: #eef;
+			margin:3px;
+		}
+
+		input {
+			margin: 3px;			
+		}
 	</style>
 </head>
 <body>
@@ -19,11 +31,21 @@
 		<h3>Block List</h3>
 		{% for block in blocks %}
 			<h5>
-				{{ block.name }} - {{ block.buildings.count }} buildings.
-				<a href="{% url 'edit-block' block.pk %}">Edit</a>
+				Block <b>{{ block.name }}</b> has {{ block.buildings.count }} building(s).
 				&nbsp;&nbsp;
 				<a href="{% url 'delete-block' block.pk %}">Delete</a>
 			</h5>
+			<ul>
+			{% for building in block.buildings.all %}
+				<li>Building <b>{{ building.name }}</b> has {{ building.tenants.count }} tenant(s).
+					<ul>
+					{% for tenant in building.tenants.all %}
+						<li>Tenant: {{ tenant.name }}</li>
+					{% endfor %}
+					</ul>
+				</li>
+			{% endfor %}
+			</ul>
 		{% endfor %}
 		<hr/>
 

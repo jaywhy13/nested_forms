@@ -18,6 +18,7 @@ def home(request):
 
 	if form.is_valid():
 		obj = form.save()
+		return redirect("home")
 
 	return render_to_response("form.html", locals(), 
 		context_instance=RequestContext(request))
