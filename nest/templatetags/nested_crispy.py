@@ -1,3 +1,5 @@
+import json
+
 from django.template import Node, NodeList
 from django import template
 from django.utils.safestring import mark_safe
@@ -73,9 +75,9 @@ class KnockoutFormTemplate(Node):
         for child_form, parent_form in child_forms:
             child_form = child_form() if isinstance(child_form, type) else child_form
             # Add knockoutjs bindings to the child form fields
-            prefix = parent_form.inline_form.prefix
             for field_name, field in child_form.fields.iteritems():
-                field.widget.attrs["data-bind"] = mark_safe("attr: { id: 'id_%s' + '-' + index + '-%s', name: '%s-' + index + '-%s'}" % (prefix, field_name, prefix, field_name))
+                attr = "{'id' : 'id_' + prefix + '-' + index + '-%s', 'name' : prefix + '-' + index + '-%s'}" % (field_name, field_name)
+                field.widget.attrs["data-bind"] = mark_safe("attr: %s" % attr)
             form_name = get_form_name(child_form)
             template_name = get_form_template_name(child_form)
             context["child_%s" % form_name] = child_form
@@ -94,7 +96,8 @@ class KnockoutFormTemplate(Node):
                 child_prefix = child_form.inline_form.prefix
                 fields = grand_child_management_form.fields
                 for field_name, field in fields.iteritems():
-                    field.widget.attrs["data-bind"] = mark_safe("attr: { id: 'id_%s-' + index + '-%s-%s', name: '%s-' + index + '-%s-%s' }" % (parent_prefix, child_prefix, field_name, parent_prefix, child_prefix, field_name))
+                    attr = "{'id' : 'id_' + prefix + '-' + index + '-%s', 'name' : prefix + '-' + index + '-%s'}" % (field_name, field_name)
+                    field.widget.attrs["data-bind"] = mark_safe("attr: %s" % attr)
                 context["child_%s_management_form" % form_name] = grand_child_management_form
                 context["child_%s_management_form_helper" % form_name] = get_default_helper()
                 nodelist.append(CrispyFormNode("child_%s_management_form" % form_name, 
@@ -113,13 +116,14 @@ def get_bindings(form):
     parent_form_div_class = "%s_form_div" % form_name
     num_forms = len(formset.forms)
     management_form_div_class = get_management_form_div_name(formset.parent_form)
+    prefix = formset.prefix
 
     bindings = []
 
     bindings.append(
         """
-            ko.applyBindings(new ManagementForm('%s', '%s', %s), jQuery(".%s").get()[0]);
-        """ % (form_name, child_template_name, num_forms, management_form_div_class)
+            ko.applyBindings(new ManagementForm('%s', '%s', %s, '%s'), jQuery(".%s").get()[0]);
+        """ % (form_name, child_template_name, num_forms, prefix, management_form_div_class)
     )
 
     for child_form in formset.forms:
