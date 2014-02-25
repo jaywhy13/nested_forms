@@ -94,6 +94,10 @@ class KnockoutFormTemplate(Node):
                 """ If our child has a child (e.g. building has tenants)
                     then print the management form for it's child (tenant)
                 """
+                management_form_div_class = get_management_form_div_name(parent_form)
+                nodelist.append(HtmlContent("<div class='%s'>" % management_form_div_class))
+
+                formset = child_form.inline_form
                 grand_child_management_form = child_form.inline_form.management_form
                 # Tweak it and adds Knockout bindings 
                 parent_prefix = parent_form.inline_form.prefix
@@ -106,6 +110,19 @@ class KnockoutFormTemplate(Node):
                 context["child_%s_management_form_helper" % form_name] = get_default_helper()
                 nodelist.append(CrispyFormNode("child_%s_management_form" % form_name, 
                     "child_%s_management_form_helper" % form_name))
+
+                if hasattr(formset, "actions_form") and \
+                        formset.actions_form is not None:
+                    inline_actions_form_name = "%s-inline_actions_form" % get_form_name(child_form)
+                    inline_actions_form_helper_name = "%s-helper" % inline_actions_form_name
+                    context[inline_actions_form_name] = formset.actions_form
+                    context[inline_actions_form_helper_name] = formset.actions_form().helper
+                    #nodelist.append(CrispyFormNode(form=inline_actions_form_name, 
+                    #    helper=inline_actions_form_helper_name))
+                
+                nodelist.append(HtmlContent("<div/>"))
+
+
             nodelist.append(HtmlContent("</script>"))
         return nodelist.render(context)
 
