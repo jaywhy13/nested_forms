@@ -41,8 +41,11 @@ class NestedModelForm(ModelForm):
 		valid = super(NestedModelForm, self).is_valid()
 		# Check if the inline form is valid
 		if self.inline_form:
-			print("Checking if inline form %s is valid" % self.inline_form.__class__.__name__)
-			return valid and self.inline_form.is_valid()
+			print(" Checking if inline form %s is valid" % self.inline_form.__class__.__name__)
+			valid &= self.inline_form.is_valid()
+		if valid:
+			print("%s is VALID" % self.__class__.__name__)
+
 		return valid
 
 	def save(self, commit=True):
@@ -187,8 +190,7 @@ class BaseNestedFormset(BaseInlineFormSet):
 		result = super(BaseNestedFormset, self).is_valid()
 		for form in self.forms:
 			result = result and form.inline_form.is_valid() if hasattr(form, "inline_form") else result
-			print("Is %s valid? %s" % (form.__class__, result))
-
+			print("  Is %s valid? %s" % (form.__class__.__name__, result))
 		return result
 
 	def save(self, commit=True):
