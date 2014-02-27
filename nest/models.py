@@ -28,3 +28,12 @@ class Tenant(models.Model):
 
 	def __unicode__(self):
 		return "Tenant: %s" % self.name
+
+class Furniture(models.Model):
+
+	name = models.CharField(max_length=255)
+	tenant = models.ForeignKey("Tenant", blank=True, null=True, 
+		related_name="furniture")
+
+	def __unicode__(self):
+		return "Furniture: %s" % self.name

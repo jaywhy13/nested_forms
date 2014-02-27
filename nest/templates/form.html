@@ -40,7 +40,12 @@
 				<li>Building <b>{{ building.name }}</b> has {{ building.tenants.count }} tenant(s).
 					<ul>
 					{% for tenant in building.tenants.all %}
-						<li>Tenant: {{ tenant.name }}</li>
+						<li>Tenant: {{ tenant.name }} has {{ tenant.furniture.count }} pieces of furniture.</li>
+						<ul>
+							{% for furniture in tenant.furniture.all %}
+								<li> {{ furniture.name }} </li>
+							{% endfor %}
+						</ul>
 					{% endfor %}
 					</ul>
 				</li>

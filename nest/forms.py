@@ -11,7 +11,7 @@ from django.forms.models import (
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Button
 
-from nest.models import Building, Block, Tenant
+from nest.models import Building, Block, Tenant, Furniture
 
 def to_underscore_case(name):
 	""" Converts title case to underscore case
@@ -171,9 +171,21 @@ class TenantActionsForm(Form):
 				BuildingForm)))
 
 
-class TenantForm(ModelForm):
+class TenantForm(NestedModelForm):
+
+	def __init__(self, *args, **kwargs):
+		kwargs["child_form"] = FurnitureForm
+		super(TenantForm, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_tag = False
+		self.helper.form_method = 'post'
+
 	class Meta:
 		model = Tenant
+
+class FurnitureForm(ModelForm):
+	class Meta:
+		model = Furniture
 
 BuildingFormSet = modelformset_factory(Building, form=BuildingForm, extra=0)
 TenantFormSet = modelformset_factory(Tenant, form=TenantForm)
