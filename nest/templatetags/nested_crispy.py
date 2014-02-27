@@ -152,6 +152,8 @@ class KnockoutFormTemplate(Node):
                 fields = grand_child_management_form.fields
                 for field_name, field in fields.iteritems():
                     attr = "{'id' : 'id_' + prefix + '-' + index + '-%s-%s', 'name' : prefix + '-' + index + '-%s-%s'}" % (child_prefix, field_name, child_prefix, field_name)
+                    if field_name == "TOTAL_FORMS":
+                        attr = "{'id' : 'id_' + prefix + '-' + index + '-%s-%s', 'name' : prefix + '-' + index + '-%s-%s', 'value': totalForms }" % (child_prefix, field_name, child_prefix, field_name)
                     field.widget.attrs["data-bind"] = mark_safe("attr: %s" % attr)
                 context["child_%s_management_form" % form_name] = grand_child_management_form
                 context["child_%s_management_form_helper" % form_name] = get_default_helper()
