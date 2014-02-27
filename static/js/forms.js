@@ -29,15 +29,17 @@
  * In order to add a child, 
  * 
  * 
- * @param {[type]} parentFormName [description]
- * @param {[type]} childTemplate  [description]
- * @param {[type]} initialForms   [description]
- * @param {[type]} prefix         [description]
+ * @param {String} parentFormName - the name of the parent form
+ * @param {String} childTemplate  - the name of the child (template) that will be added
+ * @param {String} initialForms   - the number of child forms at start
+ * @param {String} prefix         - the prefix for the management form 
  */
 function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix){
     // e.g. BlockForm-form, BuildinForm-template, x, buildings
     // e.g. BuildingForm-form-buildings-0, TenantForm-template, x, buildings-0-tenants
-    
+    console.log("Setup mgmt form: parentFormName=", parentFormName, 
+        " childTempalte=", childTemplate, " initialForms=", initialForms,
+        " childPrefix=", childPrefix);
     var self = this;
     self.childTemplate = childTemplate; // BuildingForm-template
     self.parentFormName = parentFormName;
@@ -61,20 +63,21 @@ function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix
             console.log("Warning: " + this.childrenDivFormName + " container does not exist");
         }
 
-        console.log(div.get()[0]);
-        self.totalForms( self.totalForms() + 1 );
+        //console.log(div.get()[0]);
         // Setup bindings for the grand child management form
         var formName = this.parentFormName.split("-")[0];
         var childForm = getChildFormName(formName);
-        var childFormName = childForm + "-form-" + self.childPrefix + "-0";
+        var childFormName = childForm + "-form-" + self.childPrefix + "-" + self.totalForms();
         var grandChildTemplate = getChildTemplateName(childForm);
         var grandChildManagementFormDivId = childFormName + "_management_form_div";
-        var grandChildPrefix = getChildRelName(childForm);
+        var grandChildPrefix = self.childPrefix + "-" + self.totalForms() + "-" + getChildRelName(childForm);
 
         var grandChildManagementForm = new ManagementForm(childFormName, 
             grandChildTemplate, 0, grandChildPrefix);
         grandChildManagementForm.index = self.totalForms();
         grandChildManagementForm.prefix = self.childPrefix;
+
+        self.totalForms( self.totalForms() + 1 );
 
         ko.applyBindings(grandChildManagementForm, div.get()[0]);
         //console.log("Data for: ", ko.dataFor(div.get()[0]));
