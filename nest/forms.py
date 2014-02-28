@@ -37,24 +37,23 @@ class NestedModelForm(ModelForm):
 		return to_underscore_case(self.get_form_name())
 
 	def is_valid(self):
-		print("Checking if %s is valid" % self.__class__.__name__)
 		valid = super(NestedModelForm, self).is_valid()
 		# Check if the inline form is valid
 		if self.inline_form:
-			print(" Checking if inline form %s is valid" % self.inline_form.__class__.__name__)
 			valid &= self.inline_form.is_valid()
-		if valid:
-			print("%s is VALID" % self.__class__.__name__)
-
 		return valid
 
-	def save(self, commit=True):
-		print("Saving main form: %s" % self.__class__.__name__)
+	def save(self, commit=True, save_formset=True):
 		result = super(NestedModelForm, self).save(commit=commit)
 
 		if self.inline_form:
-			print("Saving inline form: %s" % self.inline_form.__class__.__name__)
-			self.inline_form.save(commit=commit)
+			if save_formset:
+				print("Saving inline form: %s" % self.inline_form.__class__.__name__)
+				print(" will also save %s nested forms" % len(self.inline_form.forms))
+				self.inline_form.save(commit=commit)
+			else:
+				print("NOT saving formset: %s" % self.inline_form.__class__.__name__)
+				print(self.inline_form.cleaned_data)
 		return result
 
 	def setup_nested_form(self, child_form, child_actions_form=None):
@@ -153,6 +152,7 @@ class BuildingForm(NestedModelForm):
 		self.helper = FormHelper()
 		self.helper.form_tag = False
 		self.helper.form_method = 'post'
+		self.helper.add_input(Submit("submit", "Create Building"))
 
 	class Meta:
 		model = Building		
@@ -179,6 +179,7 @@ class TenantForm(NestedModelForm):
 		self.helper = FormHelper()
 		self.helper.form_tag = False
 		self.helper.form_method = 'post'
+		self.helper.add_input(Submit("submit", "Create Tenant"))
 
 	class Meta:
 		model = Tenant
@@ -202,15 +203,21 @@ class BaseNestedFormset(BaseInlineFormSet):
 		result = super(BaseNestedFormset, self).is_valid()
 		for form in self.forms:
 			result = result and form.inline_form.is_valid() if hasattr(form, "inline_form") else result
-			print("  Is %s valid? %s" % (form.__class__.__name__, result))
+			#print("  Is %s valid? %s" % (form.__class__.__name__, result))
 		return result
 
 	def save(self, commit=True):
 		result = super(BaseNestedFormset, self).save(commit=commit)
-
-		for form in self.forms:
-			if hasattr(form, "inline_form"):
-				form.inline_form.save(commit=commit)
+		cleaned_datas = self.cleaned_data
+		for i in range(len(self.forms)):
+			form = self.forms[i]
+			cleaned_data = cleaned_datas[i]
+			save_formset = not cleaned_data.get("DELETE")
+			form.save(commit=commit, save_formset=save_formset)
+			print("Saving form: %s" % form.__class__.__name__)
+			# if hasattr(form, "inline_form") and 1 == 2:
+			# 	form.inline_form.save(commit=commit, 
+			# 		is_being_deleted=is_being_deleted)
 		return result
 
 def nested_formset_factory(parent_model, child_model, grandchild_model=None):
