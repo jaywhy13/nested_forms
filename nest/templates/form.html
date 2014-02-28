@@ -24,52 +24,79 @@
 	</style>
 </head>
 <body>
-	<h1>Testing Nested Forms</h1>
+	<h1>Nested Form Example</h1>
 	<div class="main-container">
 	{% if message %} {{ message }} {% endif %}
 
 		<h3>Block List</h3>
+		{% if not blocks %}
+			No blocks yet. Add one <a href="{% url 'new-block' %}">here</a>.
+		{% else %}
+			Add another block <a href="{% url 'new-block' %}">here</a>.
+		{% endif %}
+		<hr>
+
 		{% for block in blocks %}
-			<h5>
-				Block <b>{{ block.name }}</b> has {{ block.buildings.count }} building(s).
-				&nbsp;&nbsp;
-				<a href="{% url 'delete-block' block.pk %}">Delete</a>
-			</h5>
 			<ul>
-			{% for building in block.buildings.all %}
-				<li>Building <b>{{ building.name }}</b> has {{ building.tenants.count }} tenant(s).
-					<ul>
-					{% for tenant in building.tenants.all %}
-						<li>Tenant: {{ tenant.name }} has {{ tenant.furniture.count }} pieces of furniture.</li>
+				<li>Block <b>{{ block.name }}</b> has {{ block.buildings.count }} building(s).
+				&nbsp;&nbsp;
+				<a href="{% url 'edit-model' 'block' block.pk %}">Edit</a>
+				&nbsp;&nbsp;
+				<a href="{% url 'delete-model' 'block' block.pk %}">Delete</a>
+				<ul>
+				{% for building in block.buildings.all %}
+					<li>Building <b>{{ building.name }}</b> has {{ building.tenants.count }} tenant(s).
+						&nbsp;&nbsp;
+						<a href="{% url 'edit-model' 'building' building.pk %}">Edit</a>
+						&nbsp;&nbsp;
+						<a href="{% url 'delete-model' 'building' building.pk %}">Delete</a>
+
 						<ul>
-							{% for furniture in tenant.furniture.all %}
-								<li> {{ furniture.name }} </li>
-							{% endfor %}
+						{% for tenant in building.tenants.all %}
+							<li>Tenant: {{ tenant.name }} has {{ tenant.furniture.count }} pieces of furniture.
+								&nbsp;&nbsp;
+								<a href="{% url 'edit-model' 'tenant' tenant.pk %}">Edit</a>
+								&nbsp;&nbsp;
+								<a href="{% url 'delete-model' 'tenant' tenant.pk %}">Delete</a>
+							</li>
+
+							<ul>
+								{% for furniture in tenant.furniture.all %}
+									<li> {{ furniture.name }} 
+										&nbsp;&nbsp;
+										<a href="{% url 'edit-model' 'furniture' furniture.pk %}">Edit</a>
+										&nbsp;&nbsp;
+										<a href="{% url 'delete-model' 'furniture' furniture.pk %}">Delete</a>
+									</li>
+
+								{% endfor %}
+							</ul>
+						{% endfor %}
 						</ul>
-					{% endfor %}
-					</ul>
+					</li>
+				{% endfor %}
+				</ul>
 				</li>
-			{% endfor %}
 			</ul>
 		{% endfor %}
 		<hr/>
 
+		{% if form %}
+			<h3>Editing {{ model }}: {{ obj.name }}</h3>
+			<form method="post">
+				{% nested_form form %}
+			</form>
+		{% endif %}
 
-		<h3>Nested Form Example</h3>
-		<form method="post" action="/">
-			{% nested_form form %}
-
-		<b>Closed</b>
-		</form><!-- we closed this -->
-		<!-- END OF OUR NESTED FORMS -->
 
 	</div>
-	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+	<!--<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>-->
+	<script src="/static/js/jquery-1.10.2.min.js"></script>
 	<script src="/static/js/forms.js"></script>
-	<script src="/static/js/dust-core-2.2.2.min.js"></script>
-	<script src="/static/js/templates.js"></script>
 	<script src="/static/js/knockout-3.0.0.js"></script>
-	{% nested_form_js form %}
+	{% if form %}
+		{% nested_form_js form %}
+	{% endif %}
 
 </body>
 </html>
