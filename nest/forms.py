@@ -208,16 +208,17 @@ class BaseNestedFormset(BaseInlineFormSet):
 
 	def save(self, commit=True):
 		result = super(BaseNestedFormset, self).save(commit=commit)
+		# for form in self.forms:
+		# 	if hasattr(form, "inline_form"):			
+		# 		form.inline_form.save(commit=commit)
 		cleaned_datas = self.cleaned_data
 		for i in range(len(self.forms)):
 			form = self.forms[i]
 			cleaned_data = cleaned_datas[i]
 			save_formset = not cleaned_data.get("DELETE")
-			form.save(commit=commit, save_formset=save_formset)
-			print("Saving form: %s" % form.__class__.__name__)
-			# if hasattr(form, "inline_form") and 1 == 2:
-			# 	form.inline_form.save(commit=commit, 
-			# 		is_being_deleted=is_being_deleted)
+			if hasattr(form, "inline_form"):
+				form.inline_form.save(commit=commit, save_formset=save_formset)
+				print("Saving form: %s" % form.__class__.__name__)
 		return result
 
 def nested_formset_factory(parent_model, child_model, grandchild_model=None):
@@ -246,7 +247,8 @@ class ManangeFormCachedBaseInlineFormset(BaseNestedFormset):
 			self._management_form = super(ManangeFormCachedBaseInlineFormset, self).management_form
 		return self._management_form
 
-	def save(self, commit=True):
-		super(ManangeFormCachedBaseInlineFormset, self).save(commit=commit)
-		print(" Saving formset: %s" % self.__class__.__name__)
+	def save(self, commit=True, save_formset=True):
+		if save_formset:
+			super(ManangeFormCachedBaseInlineFormset, self).save(commit=commit)
+			print(" Saving formset: %s" % self.__class__.__name__)
 
