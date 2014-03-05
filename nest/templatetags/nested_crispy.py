@@ -118,7 +118,8 @@ class KnockoutFormTemplate(Node):
             form_name = get_form_name(child_form)
             template_name = get_form_template_name(child_form)
             context["child_%s" % form_name] = child_form
-            context["child_%s_helper" % form_name] = get_default_helper()
+            context["child_%s_helper" % form_name] = (child_form.helper if \
+               hasattr(child_form, "helper") else None) or get_default_helper()
 
             # print out the script for the template
             nodelist.append(HtmlContent('<script type="text/html" id="%s">' % template_name))

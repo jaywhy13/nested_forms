@@ -108,4 +108,18 @@ function getChildRelName(parentForm){
     return childInfos[parentForm]["relName"];
 }
 
+/**
+ * Deletes the child 
+ * @param  {[type]} ctrl [description]
+ * @return {[type]}      [description]
+ */
+function deleteChild(ctrl){
+    var parents = jQuery(ctrl).parents(".form-container");
+    var parent = parents[0];
+    var prefix = parent.id.substring(0, parent.id.length-9);
+    
+
+        
+}
+
 

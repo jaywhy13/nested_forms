@@ -9,7 +9,7 @@ from django.forms.models import (
 )
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Button
+from crispy_forms.layout import Submit, Button, HTML, Layout
 
 from nest.models import Building, Block, Tenant, Furniture
 
@@ -150,9 +150,15 @@ class BuildingForm(NestedModelForm):
 		kwargs["child_actions_form"] = TenantActionsForm
 		super(BuildingForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
+		self.helper.myprop = "hello"
 		self.helper.form_tag = False
 		self.helper.form_method = 'post'
-		self.helper.add_input(Submit("submit", "Create Building"))
+		self.helper.layout = Layout(
+			HTML("Enter the name of your building"),
+			"name",
+			Button("submit", "Remove Building", onclick="deleteChild(this);"),
+			Submit("submit", "Create Building")
+		)			
 
 	class Meta:
 		model = Building		
