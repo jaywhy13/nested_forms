@@ -108,4 +108,28 @@ function getChildRelName(parentForm){
     return childInfos[parentForm]["relName"];
 }
 
+function deleteChild(inp){
+    var formContainer = $(inp).parents(".form-container")[0];
+    var prefix = formContainer.id.replace("_form_div","").split("-").slice(2).join("-") + "-";
+    var idField = "id_" + prefix + "id";
+    console.log(idField);
+    var val = $("#" + idField).val();
+    if(val){ // then this object already exists....
+        // delete the form-container and add a DELETE field set to on
+        console.log("Hiding this, it already exists...");
+        $("#id_" + prefix + "DELETE").val("on");
+        var container = $(inp).parents(".form-container")[0];
+        $(container).css("display", "none");
+    } else {
+        // we need to get the mgmt form
+        console.log("Cloberring this, it doesn't exist...");
+        var pieces = prefix.split("-");
+        var mgmtFormPrefix = pieces.slice(0, -2).join("-") + "-";
+        var totalForms = $("#id_" + mgmtFormPrefix + "TOTAL_FORMS")[0];
+        var vm = ko.dataFor(totalForms);
+        vm.totalForms(vm.totalForms()-1);
+        formContainer.remove();
+    }
+}
+
 
