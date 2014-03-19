@@ -1,17 +1,35 @@
 import inspect
 import re
 
-from django.forms import ModelForm, Form
+from django.forms import ModelForm, Form, HiddenInput
 from django.forms.models import (
 	modelformset_factory,
 	inlineformset_factory,
 	BaseInlineFormSet
 )
+from django import forms
+from django.utils import html
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Button
 
 from nest.models import Building, Block, Tenant, Furniture
+
+
+class SubmitButtonWidget(forms.Widget):
+    def render(self, name, value, attrs=None):
+        return '<input type="button" name="%s" value="%s" onclick="deleteChild(this);">' % (html.escape(name), html.escape(value))
+
+class SubmitButtonField(forms.Field):
+    def __init__(self, *args, **kwargs):
+        if not kwargs:
+            kwargs = {}
+        kwargs["widget"] = SubmitButtonWidget
+
+        super(SubmitButtonField, self).__init__(*args, **kwargs)
+
+    def clean(self, value):
+        return value
 
 def to_underscore_case(name):
 	""" Converts title case to underscore case
@@ -183,6 +201,7 @@ class TenantForm(NestedModelForm):
 
 	class Meta:
 		model = Tenant
+		exclude = ["building"]
 
 class FurnitureForm(ModelForm):
 	class Meta:
@@ -193,7 +212,13 @@ TenantFormSet = modelformset_factory(Tenant, form=TenantForm)
 InlineFormset = inlineformset_factory(Block, Building, extra=0)
 
 class BaseNestedFormset(BaseInlineFormSet):
-	
+
+	def __init__(self, *args, **kwargs):
+		super(BaseNestedFormset, self).__init__(*args, **kwargs)
+		for form in self.forms:
+			form.fields["DELETE"].widget = HiddenInput()
+			form.fields["delete_button"] = SubmitButtonField(initial="Delete")
+
 	def add_fields(self, form, index):
 		super(BaseNestedFormset, self).add_fields(form, index)
 
