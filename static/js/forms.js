@@ -126,9 +126,12 @@ function deleteChild(inp){
         var pieces = prefix.split("-");
         var mgmtFormPrefix = pieces.slice(0, -2).join("-") + "-";
         var totalForms = $("#id_" + mgmtFormPrefix + "TOTAL_FORMS")[0];
-        var vm = ko.dataFor(totalForms);
-        vm.totalForms(vm.totalForms()-1);
-        formContainer.remove();
+        $(formContainer).css("display", "none");
+        var inp = $("<input>");
+        inp.attr("id", "id_" + prefix + "DELETE");
+        inp.attr("name", prefix + "DELETE");
+        inp.val("on");
+        inp.appendTo($(formContainer));
     }
 }
 
