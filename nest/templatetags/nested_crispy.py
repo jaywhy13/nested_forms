@@ -8,7 +8,7 @@ from django.forms.formsets import BaseFormSet
 from crispy_forms.helper import FormHelper
 from crispy_forms.templatetags.crispy_forms_tags import CrispyFormNode
 
-from nest.forms import NestedModelForm, SubmitButtonField
+from nest.forms import NestedModelForm
 
 register = template.Library()
 
@@ -111,7 +111,6 @@ class KnockoutFormTemplate(Node):
         # Loop through each and get the knockout templates for each
         for child_form, parent_form in child_forms:
             child_form = child_form() if isinstance(child_form, type) else child_form
-            child_form.fields["delete_button"] = SubmitButtonField()
             # Add knockoutjs bindings to the child form fields
             for field_name, field in child_form.fields.iteritems():
                 attr = "{'id' : 'id_' + prefix + '-' + index + '-%s', 'name' : prefix + '-' + index + '-%s'}" % (field_name, field_name)
@@ -340,8 +339,11 @@ class NestedFormNode(Node):
                     nodelist.append(NestedFormNode(child_form_name, child_form_helper_name, top_level=False))
                 else:
                     #print(" %s (%s) is NOT a NestedModelForm, wrapping it in a crispy node" % (child_form_name, child_form.__class__))
+                    form_div_class = "%s_form_div" % get_form_name(child_form)
+                    nodelist.append(HtmlContent("<div id='%s' class='form-container'>" % form_div_class))
                     nodelist.append(CrispyFormNode(child_form_name, 
                         child_form_helper_name))
+                    nodelist.append(HtmlContent("</div>"))
             nodelist.append(HtmlContent("</div>"))
 
             # We need to print the management form for these kids

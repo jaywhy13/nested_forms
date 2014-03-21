@@ -59,29 +59,44 @@ function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix
         div.attr("data-bind", "template: {name: '" + self.childTemplate + "'}");
         div.addClass("child-form-wrapper");
         div.appendTo(jQuery("#" + self.childrenDivFormName));
-        if($("#" + self.childrenDivFormName).length == 0){
+        console.log("Adding div to the children div");
+        if(jQuery("#" + self.childrenDivFormName).length == 0){
             console.log("Warning: " + this.childrenDivFormName + " container does not exist");
         }
 
-        //console.log(div.get()[0]);
-        // Setup bindings for the grand child management form
-        var formName = this.parentFormName.split("-")[0];
-        var childForm = getChildFormName(formName);
-        var childFormName = childForm + "-form-" + self.childPrefix + "-" + self.totalForms();
-        var grandChildTemplate = getChildTemplateName(childForm);
-        var grandChildManagementFormDivId = childFormName + "_management_form_div";
-        var grandChildPrefix = self.childPrefix + "-" + self.totalForms() + "-" + getChildRelName(childForm);
+        if(hasChild(getChildFormName(this.parentFormName.split("-")[0]))){
+            /**
+             * in this scneario, where the child we're adding now has children 
+             * for e.g. we're adding a building, child of blocks.
+             * we need to setup bindings for the grand child mgmt form.
+             */
 
-        var grandChildManagementForm = new ManagementForm(childFormName, 
-            grandChildTemplate, 0, grandChildPrefix);
-        grandChildManagementForm.index = self.totalForms();
-        grandChildManagementForm.prefix = self.childPrefix;
+            // Setup bindings for the grand child management form
+            var formName = this.parentFormName.split("-")[0];
+            var childForm = getChildFormName(formName);
+            var childFormName = childForm + "-form-" + self.childPrefix + "-" + self.totalForms();
+            var grandChildTemplate = getChildTemplateName(childForm);
+            var grandChildManagementFormDivId = childFormName + "_management_form_div";
+            var grandChildPrefix = self.childPrefix + "-" + self.totalForms() + "-" + getChildRelName(childForm);
 
+            var grandChildManagementForm = new ManagementForm(childFormName, 
+                grandChildTemplate, 0, grandChildPrefix);
+            grandChildManagementForm.index = self.totalForms();
+            grandChildManagementForm.prefix = self.childPrefix;
+
+            //console.log("Data for: ", ko.dataFor(div.get()[0]));
+            //console.log("Context for: ", ko.dataFor(div.get()[0]));
+            ko.applyBindings(grandChildManagementForm, div.get()[0]);
+        } else {
+            // no bindings to addChild
+            ko.applyBindings({
+                "index" : self.totalForms(),
+                "prefix" : self.childPrefix,
+                "totalForms" : 0
+            }, div.get()[0]);
+
+        }
         self.totalForms( self.totalForms() + 1 );
-
-        ko.applyBindings(grandChildManagementForm, div.get()[0]);
-        //console.log("Data for: ", ko.dataFor(div.get()[0]));
-        //console.log("Context for: ", ko.dataFor(div.get()[0]));
 
     };
 }
@@ -93,6 +108,14 @@ function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix
  */
 function getChildTemplateName(parentForm){
     return childInfos[parentForm]["childTemplate"];
+}
+
+function hasChild(parentForm){
+    console.log("Checking if '" + parentForm + "' has a child");
+    if(childInfos[parentForm]){
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -112,7 +135,7 @@ function deleteChild(inp){
     var formContainer = $(inp).parents(".form-container")[0];
     var prefix = formContainer.id.replace("_form_div","").split("-").slice(2).join("-") + "-";
     var idField = "id_" + prefix + "id";
-    console.log(idField);
+    console.log("idField", idField);
     var val = $("#" + idField).val();
     if(val){ // then this object already exists....
         // delete the form-container and add a DELETE field set to on
@@ -132,4 +155,23 @@ function deleteChild(inp){
     }
 }
 
+
+$(document).ready(function(){
+    (function() {
+      var existing = ko.bindingProvider.instance;
+        ko.bindingProvider.instance = {
+            nodeHasBindings: existing.nodeHasBindings,
+            getBindings: function(node, bindingContext) {
+                var bindings;
+                try {
+                   bindings = existing.getBindings(node, bindingContext);
+                }
+                catch (ex) {
+                   console.log("There was a binding error: ", ex.message, node, bindingContext);
+                }
+                return bindings;
+            }
+        };
+    })();
+});
 
