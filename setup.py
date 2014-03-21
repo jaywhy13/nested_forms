@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='nested_forms',
-      version='0.1',
+      version='0.2',
       description='An example Django app that shows how to do nested forms',
       url='http://github.com/jaywhy13/nested_forms',
       author='Jean-Mark Wright',
