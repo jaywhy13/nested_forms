@@ -11,25 +11,10 @@ from django import forms
 from django.utils import html
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Button
+from crispy_forms.layout import Submit, Button, Layout
 
 from nest.models import Building, Block, Tenant, Furniture
 
-
-class SubmitButtonWidget(forms.Widget):
-    def render(self, name, value, attrs=None):
-        return '<input type="button" name="%s" value="%s" onclick="deleteChild(this);">' % (html.escape(name), html.escape(value))
-
-class SubmitButtonField(forms.Field):
-    def __init__(self, *args, **kwargs):
-        if not kwargs:
-            kwargs = {}
-        kwargs["widget"] = SubmitButtonWidget
-
-        super(SubmitButtonField, self).__init__(*args, **kwargs)
-
-    def clean(self, value):
-        return value
 
 def to_underscore_case(name):
 	""" Converts title case to underscore case
@@ -156,16 +141,19 @@ class BlockForm(NestedModelForm):
 	class Meta:
 		model = Block
 
-class BuildingForm(NestedModelForm):
+class BuildingForm(ModelForm):
 
 	def __init__(self, *args, **kwargs):
-		kwargs["child_form"] = TenantForm
-		kwargs["child_actions_form"] = TenantActionsForm
+		#kwargs["child_form"] = TenantForm
+		#kwargs["child_actions_form"] = TenantActionsForm
 		super(BuildingForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
 		self.helper.form_tag = False
 		self.helper.form_method = 'post'
 		self.helper.add_input(Submit("submit", "Create Building"))
+		self.helper.layout = Layout("id", "name", "DELETE",
+				Button("delete_button", "Remove Building", onclick="deleteChild(this);")
+			)
 
 	class Meta:
 		model = Building		
@@ -212,7 +200,6 @@ class BaseNestedFormset(BaseInlineFormSet):
 		super(BaseNestedFormset, self).__init__(*args, **kwargs)
 		for form in self.forms:
 			form.fields["DELETE"].widget = HiddenInput()
-			form.fields["delete_button"] = SubmitButtonField(initial="Delete")
 
 	def add_fields(self, form, index):
 		super(BaseNestedFormset, self).add_fields(form, index)
