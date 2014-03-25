@@ -205,10 +205,11 @@ def get_bindings(form):
     return bindings
 
 
-def get_js_info(form):
+def get_js_info(form, context):
     """ Returns a list of assignments that indicate the name of the 
         child template and child form name given a form name
     """
+    child_infos_rendererd = "child_infos_rendererd" in context
     infos = {}
     while hasattr(form, "child_form"):
         info = dict(childTemplate="%s-template" % get_form_name(form.child_form),
@@ -217,9 +218,16 @@ def get_js_info(form):
             )
         infos[get_form_name(form.__class__)] = info
         form = form.child_form()
-    return """
-        var childInfos = %s;
-    """ % json.dumps(infos)
+    if child_infos_rendererd:
+        return """
+            childInfos = $.extend(childInfos, %s);
+        """ % json.dumps(infos)
+    else:
+        context["child_infos_rendererd"] = True
+        return """
+            var childInfos = %s;
+        """ % json.dumps(infos)
+
 
 
 class NestedFormNodeJs(Node):
@@ -236,7 +244,7 @@ class NestedFormNodeJs(Node):
         #bindings.reverse() # bind in reverse order ...
         nodelist = NodeList()
 
-        js_info = get_js_info(actual_form)
+        js_info = get_js_info(actual_form, context)
 
         # Add the script to activate this form
         nodelist.append(HtmlContent("""
