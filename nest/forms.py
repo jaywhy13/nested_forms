@@ -27,12 +27,13 @@ def to_underscore_case(name):
 class NestedModelForm(ModelForm):
 
 	def __init__(self, *args, **kwargs):
+		formset = kwargs.pop("formset", None)
 		child_form = kwargs.pop("child_form", None)
 		child_actions_form = kwargs.pop("child_actions_form", None)
 		super(NestedModelForm, self).__init__(*args, **kwargs)
 		if not self.prefix:
 			self.prefix = ""
-		self.setup_nested_form(child_form, child_actions_form)
+		self.setup_nested_form(child_form, child_actions_form, formset=formset)
 
 	def get_uc_form_name(self):
 		""" Returns the underscore cased version
@@ -54,7 +55,7 @@ class NestedModelForm(ModelForm):
 				self.inline_form.save(commit=commit)
 		return result
 
-	def setup_nested_form(self, child_form, child_actions_form=None):
+	def setup_nested_form(self, child_form, child_actions_form=None, formset=None):
 		""" This function declares a property "inline_form" that contains
 			the inline formset (generated using the inlineformset_factory).
 			Additionally, if the user had supplied a "cihld_actions_form" 
@@ -76,10 +77,12 @@ class NestedModelForm(ModelForm):
 		self.child_form = child_form
 		self.child_actions_form = child_actions_form
 		self.inline_prefix = None
+		if not formset:
+			formset = ManangeFormCachedBaseInlineFormset
 		if child_form:
 			InlineFormset = inlineformset_factory(self.parent_model, 
 				self.child_model, extra=0,
-				formset=ManangeFormCachedBaseInlineFormset,
+				formset=formset,
 				form=child_form)
 			prefix_separator = "-" if self.prefix else ""
 			self.inline_form = InlineFormset(
@@ -132,6 +135,7 @@ class BlockForm(NestedModelForm):
 		# Set the child form
 		kwargs["child_form"] = BuildingForm
 		kwargs["child_actions_form"] = BuildingActionsForm
+		kwargs["formset"] = SpecialBuildingFormset
 		super(BlockForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
 		self.helper.form_method = 'post'
@@ -258,3 +262,9 @@ class ManangeFormCachedBaseInlineFormset(BaseNestedFormset):
 		if save_formset:
 			super(ManangeFormCachedBaseInlineFormset, self).save(commit=commit)
 
+
+class SpecialBuildingFormset(ManangeFormCachedBaseInlineFormset):
+
+	def get_queryset(self):
+		qs = super(SpecialBuildingFormset, self).get_queryset()
+		return qs.filter(name__startswith="A")
