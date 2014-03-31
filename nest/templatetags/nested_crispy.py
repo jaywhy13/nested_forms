@@ -8,7 +8,7 @@ from django.forms.formsets import BaseFormSet
 from crispy_forms.helper import FormHelper
 from crispy_forms.templatetags.crispy_forms_tags import CrispyFormNode
 
-from nest.forms import NestedModelForm, SubmitButtonField
+from nest.forms import NestedModelForm
 
 register = template.Library()
 
@@ -111,7 +111,6 @@ class KnockoutFormTemplate(Node):
         # Loop through each and get the knockout templates for each
         for child_form, parent_form in child_forms:
             child_form = child_form() if isinstance(child_form, type) else child_form
-            child_form.fields["delete_button"] = SubmitButtonField()
             # Add knockoutjs bindings to the child form fields
             for field_name, field in child_form.fields.iteritems():
                 attr = "{'id' : 'id_' + prefix + '-' + index + '-%s', 'name' : prefix + '-' + index + '-%s'}" % (field_name, field_name)
@@ -119,7 +118,7 @@ class KnockoutFormTemplate(Node):
             form_name = get_form_name(child_form)
             template_name = get_form_template_name(child_form)
             context["child_%s" % form_name] = child_form
-            context["child_%s_helper" % form_name] = get_default_helper()
+            context["child_%s_helper" % form_name] = child_form.helper or get_default_helper()
 
             # print out the script for the template
             nodelist.append(HtmlContent('<script type="text/html" id="%s">' % template_name))
@@ -206,10 +205,11 @@ def get_bindings(form):
     return bindings
 
 
-def get_js_info(form):
+def get_js_info(form, context):
     """ Returns a list of assignments that indicate the name of the 
         child template and child form name given a form name
     """
+    child_infos_rendererd = "child_infos_rendererd" in context
     infos = {}
     while hasattr(form, "child_form"):
         info = dict(childTemplate="%s-template" % get_form_name(form.child_form),
@@ -218,9 +218,16 @@ def get_js_info(form):
             )
         infos[get_form_name(form.__class__)] = info
         form = form.child_form()
-    return """
-        var childInfos = %s;
-    """ % json.dumps(infos)
+    if child_infos_rendererd:
+        return """
+            childInfos = $.extend(childInfos, %s);
+        """ % json.dumps(infos)
+    else:
+        context["child_infos_rendererd"] = True
+        return """
+            var childInfos = %s;
+        """ % json.dumps(infos)
+
 
 
 class NestedFormNodeJs(Node):
@@ -237,7 +244,7 @@ class NestedFormNodeJs(Node):
         #bindings.reverse() # bind in reverse order ...
         nodelist = NodeList()
 
-        js_info = get_js_info(actual_form)
+        js_info = get_js_info(actual_form, context)
 
         # Add the script to activate this form
         nodelist.append(HtmlContent("""
@@ -340,8 +347,11 @@ class NestedFormNode(Node):
                     nodelist.append(NestedFormNode(child_form_name, child_form_helper_name, top_level=False))
                 else:
                     #print(" %s (%s) is NOT a NestedModelForm, wrapping it in a crispy node" % (child_form_name, child_form.__class__))
+                    form_div_class = "%s_form_div" % get_form_name(child_form)
+                    nodelist.append(HtmlContent("<div id='%s' class='form-container'>" % form_div_class))
                     nodelist.append(CrispyFormNode(child_form_name, 
                         child_form_helper_name))
+                    nodelist.append(HtmlContent("</div>"))
             nodelist.append(HtmlContent("</div>"))
 
             # We need to print the management form for these kids
