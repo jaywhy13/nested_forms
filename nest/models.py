@@ -10,6 +10,7 @@ class Block(models.Model):
 
 class Building(models.Model):
 	name = models.CharField("Bldg Name", max_length=255)
+	street_name = models.CharField("Bldg Street", max_length=255)
 	block = models.ForeignKey("Block", blank=True, null=True, 
 		related_name="buildings")
 
