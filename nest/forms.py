@@ -27,6 +27,22 @@ def to_underscore_case(name):
 class NestedModelForm(ModelForm):
 
 	def __init__(self, *args, **kwargs):
+
+		if args and args[0]:
+			args = list(args)
+			data = args[0]
+			# HACK: Go through all the management forms and make sure that
+			# the number initial forms matches the number of IDS that are available
+			data = data.copy()
+			keys = data.keys()
+			for key in keys:
+				if key.endswith("-INITIAL_FORMS"):
+					num_initial = int(data[key])
+					prefix = key[:-14]
+					actual_initial = len([_key for _key in keys if re.match("%s\-\d+\-id" % prefix, _key) and data[_key] != ''])
+					if num_initial != actual_initial:
+						data[key] = actual_initial
+			args[0] = data
 		formset = kwargs.pop("formset", None)
 		child_form = kwargs.pop("child_form", None)
 		child_actions_form = kwargs.pop("child_actions_form", None)
@@ -135,7 +151,7 @@ class BlockForm(NestedModelForm):
 		# Set the child form
 		kwargs["child_form"] = BuildingForm
 		kwargs["child_actions_form"] = BuildingActionsForm
-		kwargs["formset"] = SpecialBuildingFormset
+		#kwargs["formset"] = SpecialBuildingFormset
 		super(BlockForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
 		self.helper.form_method = 'post'
@@ -155,7 +171,7 @@ class BuildingForm(ModelForm):
 		self.helper.form_tag = False
 		self.helper.form_method = 'post'
 		self.helper.add_input(Submit("submit", "Create Building"))
-		self.helper.layout = Layout("id", "name", "DELETE",
+		self.helper.layout = Layout("id", "name", "DELETE","street_name",
 				Button("delete_button", "Remove Building", onclick="deleteChild(this);")
 			)
 
