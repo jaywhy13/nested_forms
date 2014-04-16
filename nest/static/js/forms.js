@@ -62,7 +62,6 @@ function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix
         var div = jQuery("<div/>");
         div.attr("data-bind", "template: {name: '" + self.childTemplate + "'}");
         div.addClass("child-form-wrapper");
-        div.addClass("form-container");
         div.appendTo(jQuery("#" + self.childrenDivFormName));
         console.log("Adding div to the children div");
         if(jQuery("#" + self.childrenDivFormName).length == 0){
@@ -108,7 +107,7 @@ function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix
             type: NESTED_CHILD_ADDED,
             prefix: self.childPrefix,
             container : jQuery("#" + self.childrenDivFormName),
-            child: div
+            child: div.children(".form-container")[0]
         });
     };
 }
@@ -149,7 +148,7 @@ function getChildRelName(parentForm){
  * @return {number} - the number of undeleted children
  */
 function getChildCount(childrenDiv){
-    return $(childrenDiv).children(".form-container:visible").length;
+    return $(childrenDiv).children(".form-container:visible").length + $(childrenDiv).children(".child-form-wrapper").children(".form-container:visible").length
 }
 
 function deleteChild(inp){
