@@ -104,8 +104,10 @@ $("body").on(NESTED_CHILD_ADDED, function(event){
  var eventType = event["type"];
  var prefix = event["prefix"];
  var childContainer = event["container"];
+ var child = event["child"];
  
  console.log("We now have ", getChildCount(childContainer), " children now");
+ console.log("This DIV was added", child);
 
 });
 
