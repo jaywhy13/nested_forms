@@ -181,7 +181,7 @@ function deleteChild(inp){
     jQuery("body").trigger({
         type: NESTED_CHILD_REMOVED,
         prefix: prefix,
-        container : jQuery(formContainer).children(".form-container")
+        container : jQuery(formContainer).parents(".form-children")
     });
 }
 
