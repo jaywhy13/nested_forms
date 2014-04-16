@@ -107,7 +107,7 @@ function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix
             type: NESTED_CHILD_ADDED,
             prefix: self.childPrefix,
             container : jQuery("#" + self.childrenDivFormName),
-            child: div.children(".form-container")[0]
+            child: div.parents(".form-children")[0]
         });
     };
 }
@@ -155,17 +155,16 @@ function deleteChild(inp){
     var formContainer = $(inp).parents(".form-container")[0];
     var prefix = formContainer.id.replace("_form_div","").split("-").slice(2).join("-") + "-";
     var idField = "id_" + prefix + "id";
-    console.log("idField", idField);
     var val = $("#" + idField).val();
     if(val){ // then this object already exists....
         // delete the form-container and add a DELETE field set to on
-        console.log("Hiding this, it already exists...");
+        //console.log("Hiding this, it already exists...");
         $("#id_" + prefix + "DELETE").val("on");
         var container = $(inp).parents(".form-container")[0];
         $(container).css("display", "none");
     } else {
         // we need to get the mgmt form
-        console.log("Cloberring this, it doesn't exist...");
+        //console.log("Cloberring this, it doesn't exist...");
         var pieces = prefix.split("-");
         var mgmtFormPrefix = pieces.slice(0, -2).join("-") + "-";
         var totalForms = $("#id_" + mgmtFormPrefix + "TOTAL_FORMS")[0];
@@ -176,11 +175,12 @@ function deleteChild(inp){
         inp.val("on");
         inp.appendTo($(formContainer));
     }
+
     // Trigger an event of children being deleted...
     jQuery("body").trigger({
         type: NESTED_CHILD_REMOVED,
         prefix: prefix,
-        container : jQuery(formContainer).parents(".form-children")
+        container : jQuery(formContainer).parents(".form-children")[0]
     });
 }
 
