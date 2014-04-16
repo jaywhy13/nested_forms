@@ -1,4 +1,8 @@
 
+// Some constants
+var NESTED_CHILD_ADDED = "childAdded";
+var NESTED_CHILD_REMOVED  = "childRemoved";
+
 /**
  * The Management Form manages bindings for Django formset management forms.
  * The Django management form stores the following information:
@@ -37,9 +41,9 @@
 function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix){
     // e.g. BlockForm-form, BuildinForm-template, x, buildings
     // e.g. BuildingForm-form-buildings-0, TenantForm-template, x, buildings-0-tenants
-    console.log("Setup mgmt form: parentFormName=", parentFormName, 
-        " childTempalte=", childTemplate, " initialForms=", initialForms,
-        " childPrefix=", childPrefix);
+    // console.log("Setup mgmt form: parentFormName=", parentFormName, 
+        // " childTempalte=", childTemplate, " initialForms=", initialForms,
+        // " childPrefix=", childPrefix);
     var self = this;
     self.childTemplate = childTemplate; // BuildingForm-template
     self.parentFormName = parentFormName;
@@ -58,6 +62,7 @@ function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix
         var div = jQuery("<div/>");
         div.attr("data-bind", "template: {name: '" + self.childTemplate + "'}");
         div.addClass("child-form-wrapper");
+        div.addClass("form-container");
         div.appendTo(jQuery("#" + self.childrenDivFormName));
         console.log("Adding div to the children div");
         if(jQuery("#" + self.childrenDivFormName).length == 0){
@@ -98,6 +103,12 @@ function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix
         }
         self.totalForms( self.totalForms() + 1 );
 
+        // Trigger an event of children being added...
+        jQuery("body").trigger({
+            type: NESTED_CHILD_ADDED,
+            prefix: self.childPrefix,
+            container : jQuery("#" + self.childrenDivFormName)
+        });
     };
 }
 
@@ -131,6 +142,15 @@ function getChildRelName(parentForm){
     return childInfos[parentForm]["relName"];
 }
 
+/**
+ * Returns the number of children
+ * @param  {selector} childrenDiv - selector referring to the children div (.form-children) DIV
+ * @return {number} - the number of undeleted children
+ */
+function getChildCount(childrenDiv){
+    return $(childrenDiv).children(".form-container:visible").length;
+}
+
 function deleteChild(inp){
     var formContainer = $(inp).parents(".form-container")[0];
     var prefix = formContainer.id.replace("_form_div","").split("-").slice(2).join("-") + "-";
@@ -156,6 +176,12 @@ function deleteChild(inp){
         inp.val("on");
         inp.appendTo($(formContainer));
     }
+    // Trigger an event of children being deleted...
+    jQuery("body").trigger({
+        type: NESTED_CHILD_REMOVED,
+        prefix: prefix,
+        container : jQuery(formContainer).children(".form-container")
+    });
 }
 
 
