@@ -1,7 +1,7 @@
 import inspect
 import re
 
-from django.forms import ModelForm, Form, HiddenInput
+from django.forms import *
 from django.forms.models import (
 	modelformset_factory,
 	inlineformset_factory,
@@ -44,12 +44,77 @@ class NestedModelForm(ModelForm):
 						data[key] = actual_initial
 			args[0] = data
 		formset = kwargs.pop("formset", None)
+		self.formset_initial = kwargs.pop("formset_initial", {})
 		child_form = kwargs.pop("child_form", None)
 		child_actions_form = kwargs.pop("child_actions_form", None)
 		super(NestedModelForm, self).__init__(*args, **kwargs)
 		if not self.prefix:
 			self.prefix = ""
 		self.setup_nested_form(child_form, child_actions_form, formset=formset)
+
+	def add_form(self, **kwargs):
+		""" Adds a form to the list of forms and initializes it with the kwargs supplied
+		"""
+		total_forms = self.inline_form.total_form_count()
+		form = self.inline_form._construct_form(total_forms, **kwargs)
+		form.fields["DELETE"].widget = HiddenInput()
+		self.inline_form.forms.append(form)
+
+		self.inline_form.data = self.inline_form.data.copy()
+		total_count_name = '%s-%s' % (self.inline_form.management_form.prefix, "TOTAL_FORMS")
+		if total_count_name in self.inline_form.management_form.initial:
+			self.inline_form.management_form.initial[total_count_name] = self.inline_form.management_form.initial["TOTAL_FORMS"] + 1
+		return form
+
+	def process_initial(self):
+		""" Looks at the initial and sees if we need to add any forms. If we 
+			have something in the initial and it doesn't have an ID yet,
+			it won't show up in the forms. So we need to add a form for it.
+		"""
+		print("Processing initial: %s for %s" % (self.formset_initial, self.__class__.__name__))
+		inline_form = self.inline_form
+		prefix = inline_form.prefix
+		total_form_count_name = "%s-TOTAL_FORMS" % prefix
+		if total_form_count_name in self.formset_initial:
+			total_form_count = int(self.formset_initial[total_form_count_name])
+			undeleted_form_count = 0
+			for i in range(total_form_count):
+				form_prefix = "%s-%s" % (prefix, i)
+				id_name = "%s-id" % form_prefix
+				delete_key = "%s-DELETE" % form_prefix
+				delete_value = self.formset_initial.get(delete_key, "off")
+				if delete_value == "on":
+					continue
+				undeleted_form_count += 1
+				#print("This form has prefix: %s" % form_prefix)
+				#print("Looking for an id with key: %s" % id_name)
+
+				form_initial = {}
+				for key, value in self.formset_initial.iteritems():
+					if key.startswith(form_prefix):
+						key_without_prefix = key[len(form_prefix) + 1:]
+						form_initial[key_without_prefix] = value
+				#print("This form has initial: %s" % form_initial)
+				pk = self.formset_initial.get(id_name, "")
+				if not pk:
+					# We need to add a form for this..
+					print("Creating form: %s" % form_prefix)
+					form = self.add_form()
+				else:
+					print("Will update initial for: %s" % form_prefix)
+					form = inline_form.forms[i]
+				# If this form is a nested form, we need to process the initial for it as well
+				if issubclass(form.__class__, NestedModelForm):
+					print("Updating nested form %s with initial: %s" % (form.__class__.__name__, form_initial))
+					form.formset_initial.update(self.formset_initial)
+					form.process_initial()
+				else:
+					print("Updating %s with initial: %s" % (form.__class__.__name__, form_initial))
+					form.initial.update(form_initial)
+			self.formset_initial[total_form_count_name] = undeleted_form_count
+		else:
+			print("Could not find %s in the initial: %s" % (total_form_count_name, self.formset_initial))
+
 
 	def get_uc_form_name(self):
 		""" Returns the underscore cased version
@@ -112,6 +177,7 @@ class NestedModelForm(ModelForm):
 				)
 			self.inline_form.actions_form = child_actions_form
 			self.inline_prefix = InlineFormset.get_default_prefix()
+			self.process_initial()
 		else:
 			self.inline_form = None
 			self.inline_actions_form = None
