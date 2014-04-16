@@ -91,3 +91,22 @@ The final step is to generate a `templates.js` that needs to be included on the 
 ```
 node node/dustify.js
 ```
+
+
+# Events
+There are two events available in Nested forms currently.
+* NESTED_CHILD_ADDED
+* NESTED_CHILD_REMOVED
+
+To subscribe to these events do like so:
+```
+$("body").on(NESTED_CHILD_ADDED, function(event){
+ var eventType = event["type"];
+ var prefix = event["prefix"];
+ var childContainer = event["container"];
+ 
+ console.log("We now have ", getChildCount(childContainer), " children now");
+
+});
+
+```
