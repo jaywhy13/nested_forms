@@ -107,7 +107,8 @@ function ManagementForm(parentFormName, childTemplate, initialForms, childPrefix
         jQuery("body").trigger({
             type: NESTED_CHILD_ADDED,
             prefix: self.childPrefix,
-            container : jQuery("#" + self.childrenDivFormName)
+            container : jQuery("#" + self.childrenDivFormName),
+            child: div
         });
     };
 }
