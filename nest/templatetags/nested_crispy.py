@@ -212,9 +212,11 @@ def get_js_info(form, context):
     child_infos_rendererd = "child_infos_rendererd" in context
     infos = {}
     while hasattr(form, "child_form"):
+        inline_form = form.inline_form
+        rel_name = getattr(inline_form, "rel_name", inline_form.prefix)
         info = dict(childTemplate="%s-template" % get_form_name(form.child_form),
             childForm="%s" % get_form_name(form.child_form),
-            relName=form.inline_form.rel_name
+            relName=rel_name
             )
         infos[get_form_name(form.__class__)] = info
         form = form.child_form()
