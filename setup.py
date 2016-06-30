@@ -7,7 +7,14 @@ setup(name='nested_forms',
       author='Jean-Mark Wright',
       author_email='jeanmark.wright@gmail.com',
       license='MIT',
-      packages=['nest', 'nested_forms', 'nest.templatetags'],
+      packages=[
+            'nest', 
+            'nested_forms', 
+            'nest.templatetags', 
+            'nest.management.commands'],
+      package_data={
+            'nest' : ['templates/*.html', 'static/**/*.js']
+      },
       install_requires = [
             'Django==1.5.5',
             'argparse==1.2.1',
