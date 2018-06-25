@@ -17,9 +17,6 @@ setup(name='nested_forms',
       },
       install_requires = [
             'Django>=1.5.5,<=2.0.0',
-            'argparse==1.2.1',
-            'django-crispy-forms==1.4.0',
-            'six==1.4.1',
-            'wsgiref==0.1.2',
+            'django-crispy-forms>=1.4.0',
       ],
       zip_safe=False)
